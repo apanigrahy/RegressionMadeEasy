@@ -26,6 +26,13 @@ class LinearMadeEasy:
 
     def __init__(self, model: RegressionResultsWrapper) -> None:
         """Initialize with fitted OLS model."""
+        # Check that the model is a statsmodels logistic regression model
+        if not isinstance(model, RegressionResultsWrapper):
+            raise TypeError(
+                "Model must be a statsmodels object (BinaryResultsWrapper) "
+                "used for logistic regression. Please fit your model using "
+                "sm.OLS(<formula>, <data>).fit()."
+            )
         self.model = model
 
         self.fitted_values = model.fittedvalues

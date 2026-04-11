@@ -3,16 +3,22 @@
 # Import pathlib for handling files
 import pathlib
 
-
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-from typing import cast
-from statsmodels.regression.linear_model import RegressionResultsWrapper
 from plotnine import (
-    ggplot, aes, geom_point, geom_hline, geom_smooth,
-    labs, theme_classic, stat_qq, stat_qq_line
+    aes,
+    geom_hline,
+    geom_point,
+    geom_segment,
+    geom_smooth,
+    ggplot,
+    labs,
+    stat_qq,
+    stat_qq_line,
+    theme_classic,
 )
+from statsmodels.regression.linear_model import RegressionResultsWrapper
 
 
 class LinearMadeEasy:
@@ -32,16 +38,20 @@ class LinearMadeEasy:
         self.X = model.model.exog
         self.y = model.model.endog
 
+        self.influence = model.get_influence()
+        self.cooks_distance = self.influence.cooks_distance[0]
+        self.observation_number = np.arange(len(self.fitted_values))
 
     @property
     def diagnostic_data(self) -> pd.DataFrame:
         """Bundle diagnostics into a DataFrame."""
-        return pd.DataFrame({
-            "fitted": self.fitted_values,
-            "residuals": self.residuals,
-            "std_resid": self.std_resid
-        })
-
+        return pd.DataFrame(
+            {
+                "fitted": self.fitted_values,
+                "residuals": self.residuals,
+                "std_resid": self.std_resid,
+            }
+        )
 
     @property
     def resid_vs_fitted(self) -> ggplot:
@@ -49,17 +59,16 @@ class LinearMadeEasy:
         df = self.diagnostic_data
 
         return (
-            ggplot(df, aes(x="fitted", y="residuals")) # type: ignore[no-untyped-call]
-            + geom_point(alpha=0.4, color = "skyblue")
+            ggplot(df, aes(x="fitted", y="residuals"))  # type: ignore[no-untyped-call]
+            + geom_point(alpha=0.4, color="skyblue")
             + geom_hline(yintercept=0, linetype="dashed", color="red")
             + labs(
                 title="Residuals vs Fitted Values",
                 x="Fitted Values",
-                y="Residuals"
+                y="Residuals",
             )
-            + theme_classic() # type: ignore[no-untyped-call]
+            + theme_classic()  # type: ignore[no-untyped-call]
         )
-
 
     @property
     def qq_plot(self) -> ggplot:
@@ -67,48 +76,77 @@ class LinearMadeEasy:
         df = self.diagnostic_data
 
         return (
-            ggplot(df, aes(sample="std_resid")) # type: ignore[no-untyped-call]
+            ggplot(df, aes(sample="std_resid"))  # type: ignore[no-untyped-call]
             + stat_qq()
             + stat_qq_line(color="red", linetype="dashed")
-            + labs(title="Normal Q-Q Plot (Standardized Residuals)",
-                   x="Theoretical Quantiles",
-                   y="Sample Quantiles"
+            + labs(
+                title="Normal Q-Q Plot (Standardized Residuals)",
+                x="Theoretical Quantiles",
+                y="Sample Quantiles",
             )
-            + theme_classic() # type: ignore[no-untyped-call]
+            + theme_classic()  # type: ignore[no-untyped-call]
         )
-
 
     @property
     def regression_plot(self) -> ggplot:
         """Observed data + fitted regression line."""
         x_vals = self.X[:, 1] if self.X.shape[1] > 1 else self.X[:, 0]
 
-        df_plot = pd.DataFrame({
-            "x": x_vals,
-            "y": self.y
-        })
+        df_plot = pd.DataFrame({"x": x_vals, "y": self.y})
 
         return (
-            ggplot(df_plot, aes(x="x", y="y")) # type: ignore[no-untyped-call]
-            + geom_point(alpha=0.3, color = "skyblue")
+            ggplot(df_plot, aes(x="x", y="y"))  # type: ignore[no-untyped-call]
+            + geom_point(alpha=0.3, color="skyblue")
             + geom_smooth(method="lm")
             + labs(
                 title=f"{self.response_name} vs Predictor",
-                x=self.predictor_names[1] if len(self.predictor_names) > 1 else self.predictor_names[0],
-                y=self.response_name
+                x=self.predictor_names[1]
+                if len(self.predictor_names) > 1
+                else self.predictor_names[0],
+                y=self.response_name,
             )
-            + theme_classic() # type: ignore[no-untyped-call]
+            + theme_classic()  # type: ignore[no-untyped-call]
         )
-        
+
+    @property
+    def cooks_distance_plot(self) -> ggplot:
+        """Cook's distance plot for linear regression model."""
+        plot_df = pd.DataFrame(
+            {
+                "observation_number": self.observation_number,
+                "cooks_distance": self.cooks_distance,
+            }
+        )
+
+        threshold = 4 / len(plot_df)
+
+        return (
+            ggplot(plot_df, aes(x="observation_number", y="cooks_distance"))  # type: ignore[no-untyped-call]
+            + geom_point(alpha=0.8)
+            + geom_segment(
+                aes(
+                    x="observation_number",
+                    xend="observation_number",
+                    y=0,
+                    yend="cooks_distance",
+                ),  # type: ignore[no-untyped-call]
+                alpha=0.4,
+            )
+            + geom_hline(yintercept=threshold, linetype="dashed", color="red")
+            + labs(
+                title="Cook's Distance vs Observation Number",
+                x="Observation Number",
+                y="Cook's Distance",
+            )
+            + theme_classic()  # type: ignore[no-untyped-call]
+        )
+
 
 # Testing
 if __name__ == "__main__":
     # Set path to sample data
     DATA_PATH = (
-        pathlib.Path(__file__).parent.parent
-        / "tests"
-        / "data"
-        / "hypoxia.csv"
+        pathlib.Path(__file__).parent.parent / "tests" / "data" / "hypoxia.csv"
     )
 
     # Read in the data
@@ -134,15 +172,18 @@ if __name__ == "__main__":
     # Create the made easy object
     helper = LinearMadeEasy(model)
 
-    #1 Test Regression Plot
+    # 1 Test Regression Plot
     reg_plot = helper.regression_plot
-    reg_plot.save("reg_analysis3.png", width=8, height=6, dpi=300)
+    reg_plot.save("reg_analysis4.png", width=8, height=6, dpi=300)
 
-    #2 Test Resid Plot
+    # 2 Test Resid Plot
     res_plot = helper.resid_vs_fitted
-    res_plot.save("resid_plot3.png", width=8, height=6, dpi=300)
+    res_plot.save("resid_plot4.png", width=8, height=6, dpi=300)
 
-    #3 Test the QQ Plot
+    # 3 Test the QQ Plot
     qq_plot = helper.qq_plot
-    qq_plot.save("qq_plot3.png", width=8, height=6, dpi=300)
+    qq_plot.save("qq_plot4.png", width=8, height=6, dpi=300)
 
+    # 4 Cook's Dist Plot
+    cooks_plot = helper.cooks_distance_plot
+    cooks_plot.save("cook_plot4.png", width=8, height=6, dpi=300)

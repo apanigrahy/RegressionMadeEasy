@@ -1,4 +1,5 @@
 """Tests for LogisticMadeEasy class (from logisticreg.py)."""
+
 # Import libraries
 import numpy as np
 import pandas as pd
@@ -36,6 +37,7 @@ def logistic_model() -> LogisticMadeEasy:
     # Return a LogisticMadeEasy model
     return LogisticMadeEasy(model)
 
+
 # Test that residual vs fitted plot property returns a ggplot object
 def test_deviance_residual_vs_fitted_returns_ggplot(
     logistic_model: LogisticMadeEasy,
@@ -43,3 +45,45 @@ def test_deviance_residual_vs_fitted_returns_ggplot(
     """Test that deviance residual vs fitted plot property returns a ggplot."""
     plot = logistic_model.deviance_residual_vs_fitted_plot()
     assert isinstance(plot, ggplot)
+
+
+# Test that cook's distance plot property returns a ggplot object
+def test_cooks_distance_returns_ggplot(
+    logistic_model: LogisticMadeEasy,
+) -> None:
+    """Test that cook's distance plot property returns a ggplot."""
+    plot = logistic_model.cooks_distance_plot()
+    assert isinstance(plot, ggplot)
+
+
+# Test that dfbetas plot property returns a ggplot object
+def test_dfbetas_returns_ggplot(
+    logistic_model: LogisticMadeEasy,
+) -> None:
+    """Test that dfbetas plot property returns a ggplot."""
+    plot = logistic_model.dfbetas_plot()
+    assert isinstance(plot, ggplot)
+
+
+# Test that VIF plot property returns a ggplot object
+def test_vif_returns_ggplot(
+    logistic_model: LogisticMadeEasy,
+) -> None:
+    """Test that VIF plot property returns a ggplot."""
+    plot = logistic_model.vif_plot()
+    assert isinstance(plot, ggplot)
+
+
+# Test that ROC curve plot property returns a ggplot object
+def test_roc_curve_returns_ggplot(
+    logistic_model: LogisticMadeEasy,
+) -> None:
+    """Test that ROC curve plot property returns a ggplot."""
+    plot = logistic_model.roc_curve_plot()
+    assert isinstance(plot, ggplot)
+
+# Test that an error is raised if a non-logistic model is passed into function
+def test_invalid_model_raises_type_error() -> None:
+    """Test that a TypeError is raised for a non-logistic model."""
+    with pytest.raises(TypeError):
+        LogisticMadeEasy("not a model")  

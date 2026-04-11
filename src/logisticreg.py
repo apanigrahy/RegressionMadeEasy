@@ -29,6 +29,13 @@ class LogisticMadeEasy:
     # Define instances
     def __init__(self, model: dm.BinaryResultsWrapper) -> None:
         """Intialize instances for LogisticMadeEasy class."""
+        # Check that the model is a statsmodels logistic regression model
+        if not isinstance(model, dm.BinaryResultsWrapper):
+            raise TypeError(
+                "Model must be a statsmodels object (BinaryResultsWrapper) "
+                "used for logistic regression. Please fit your model using "
+                "sm.Logit(<formula>, <data>).fit()."
+            )
         self.model = model
         self.dfbetas = model.get_influence().dfbetas
         self.predictor_names = model.model.exog_names

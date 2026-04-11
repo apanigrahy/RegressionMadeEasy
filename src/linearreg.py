@@ -134,14 +134,15 @@ if __name__ == "__main__":
     # Create the made easy object
     helper = LinearMadeEasy(model)
 
+    #1 Test Regression Plot
     reg_plot = helper.regression_plot
     reg_plot.save("reg_analysis3.png", width=8, height=6, dpi=300)
 
-    #3 Test Resid 
+    #2 Test Resid Plot
     res_plot = helper.resid_vs_fitted
     res_plot.save("resid_plot3.png", width=8, height=6, dpi=300)
 
-    # 4. Test the QQ Plot
+    #3 Test the QQ Plot
     qq_plot = helper.qq_plot
     qq_plot.save("qq_plot3.png", width=8, height=6, dpi=300)
 

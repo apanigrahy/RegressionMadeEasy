@@ -4,7 +4,7 @@
 import pathlib
 
 # Import packages for data manipulation and regression model fitting
-import polars as pl
+import pandas as pd
 import statsmodels.api as sm
 
 # Set path to sample data
@@ -15,7 +15,7 @@ DATA_PATH = (
 )
 
 # Read in the data
-df = pl.read_csv(DATA_PATH)
+df = pd.read_csv(DATA_PATH)
 
 # Define outcome and predictor variables
 OUTCOME = "Diabetes_binary"

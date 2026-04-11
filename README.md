@@ -86,3 +86,4 @@ Example DFBetas Plot:
 Example ROC curve output:
 
 ![ROC Curve](docs/images/log_model_roc_curve_plot.png)
+

@@ -36,7 +36,15 @@ class LogisticMadeEasy:
         self.deviance_residuals = model.resid_dev
         self.cooks_distance = model.get_influence().cooks_distance[0]
 
-    # Define a property for fixing the predictor names
+    # Create an internal property for re-formmated predictor variable names
+    # (for plots)
+    @property
+    def _formatted_predictor_names(self) -> list[str]:
+        """Return predictor names with const replaced by Intercept."""
+        return [
+            "Intercept" if name == "const" else name.title()
+            for name in self.predictor_names
+        ]
 
     # Define a property for a deviance residual vs fitted plot
     def deviance_residual_vs_fitted_plot(self) -> ggplot:
@@ -121,7 +129,7 @@ class LogisticMadeEasy:
         # Create a pandas dataframe for plotting (including intercept)
         plot_df = pd.DataFrame(
             self.dfbetas,
-            columns=self.predictor_names,
+            columns=self._formatted_predictor_names,
         )
         # Get the observation number
         plot_df["observation_number"] = self.observation_number
@@ -197,12 +205,9 @@ if __name__ == "__main__":
     OUTCOME = "Diabetes_binary"
     PREDICTORS = ["HighBP", "HighChol", "BMI", "Smoker"]
 
-    # Convert to numpy for statsmodels
-    y = df[OUTCOME].to_numpy()
-    X = df[PREDICTORS].to_numpy()
-
-    # Add an intercepts column
-    X = sm.add_constant(X)
+    # Define outcome and predictor variables
+    y = df[OUTCOME]
+    X = sm.add_constant(df[PREDICTORS])
 
     # Fit a logistic regression model
     model = sm.Logit(y, X).fit()

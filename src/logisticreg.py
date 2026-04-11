@@ -1,18 +1,17 @@
 """Create plots for logistic regression models."""
 
-# Import pathlib for handling files
-import pathlib
+# Import cast from typing
 from typing import cast
 
 # Import packages for data manipulation and regression model fitting
 import numpy as np
 import pandas as pd
-import statsmodels.api as sm
 import statsmodels.discrete.discrete_model as dm
 from plotnine import (
     aes,
     facet_wrap,
     geom_hline,
+    geom_line,
     geom_point,
     geom_segment,
     geom_vline,
@@ -25,7 +24,7 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 # Create a custom class object for logistic regression models
 class LogisticMadeEasy:
-    """Diagnostic plots for logistic regression models."""
+    """Create plots for logistic regression models."""
 
     # Define instances
     def __init__(self, model: dm.BinaryResultsWrapper) -> None:
@@ -61,9 +60,12 @@ class LogisticMadeEasy:
 
         # Return the plot
         return (
-            ggplot(plot_df, 
-            aes( # type: ignore[no-untyped-call]
-                x="fitted_values", y="deviance_residuals"))  
+            ggplot(
+                plot_df,
+                aes(  # type: ignore[no-untyped-call]
+                    x="fitted_values", y="deviance_residuals"
+                ),
+            )
             + geom_hline(yintercept=0, linetype="dashed", color="red")
             + geom_point(alpha=0.5, color="skyblue")
             + theme_classic()  # type: ignore[no-untyped-call]
@@ -122,7 +124,7 @@ class LogisticMadeEasy:
         # Change "const" to be "Intercept"
         self.predictor_names = [
             "Intercept" if name == "const" else name
-            for name in model.model.exog_names
+            for name in self.model.model.exog_names
         ]
         # Get number of observations
         n = len(self.observation_number)
@@ -173,7 +175,7 @@ class LogisticMadeEasy:
                 linetype="dashed",
                 color="red",
             )
-            + facet_wrap("predictor")  
+            + facet_wrap("predictor")
             + theme_classic()  # type: ignore[no-untyped-call]
             + labs(
                 title="DFBetas by Predictor",
@@ -185,10 +187,10 @@ class LogisticMadeEasy:
     # Define a property for VIF plot
     def vif_plot(self) -> ggplot:
         """Plot VIF for each predictor."""
-        # Calculate VIF for each predictor (skipping intercept at index 0)
+        # Calculate VIF for each predictor
         vif_values = [
-            variance_inflation_factor(self.model.model.exog, i)
-            for i in range(1, self.model.model.exog.shape[1])
+            variance_inflation_factor(self.model.model.exog, vif_idx)
+            for vif_idx in range(1, self.model.model.exog.shape[1])
         ]
         # Build a dataframe for plotnine to use
         plot_df = pd.DataFrame(
@@ -226,20 +228,71 @@ class LogisticMadeEasy:
         )
 
     # Add an ROC curve plot
+    def roc_curve_plot(self) -> ggplot:
+        """Plot the ROC curve for the model."""
+        # Get the actual outcomes and predicted probabilities
+        y_true = self.model.model.endog
+        y_pred = self.fitted_values
 
-    # Define a method for displaying a coefficent summary table
+        # Generate threshold values and calculate True Positive Rate (TPR)
+        # and False Positive Rate (FPR)
+        thresholds = np.sort(np.unique(y_pred))[::-1]
+        tpr = [
+            np.sum((y_pred >= t) & (y_true == 1)) / np.sum(y_true == 1)
+            for t in thresholds
+        ]
+        fpr = [
+            np.sum((y_pred >= t) & (y_true == 0)) / np.sum(y_true == 0)
+            for t in thresholds
+        ]
 
-    # Define a method for displaying regression model summary table
+        # Build a dataframe and sort by FPR for plotting
+        plot_df = pd.DataFrame({"fpr": fpr, "tpr": tpr})
+        plot_df = plot_df.sort_values("fpr").reset_index(drop=True)
+
+        # Calculate AUC using the trapezoidal rule on sorted values
+        auc = float(np.trapezoid(plot_df["tpr"], plot_df["fpr"]))
+
+        # Build a reference line dataframe (diagonal)
+        ref_df = pd.DataFrame({"fpr": [0, 1], "tpr": [0, 1]})
+
+        # Return the plot
+        return cast(
+            ggplot,
+            ggplot(
+                plot_df,
+                aes(  # type: ignore[no-untyped-call]
+                    x="fpr", y="tpr"
+                ),
+            )
+            + geom_line(color="skyblue")
+            + geom_line(
+                data=ref_df,
+                mapping=aes(  # type: ignore[no-untyped-call]
+                    x="fpr", y="tpr"
+                ),
+                linetype="dashed",
+                color="red",
+            )
+            + theme_classic()  # type: ignore[no-untyped-call]
+            + labs(
+                title=f"ROC Curve (AUC = {round(auc, 3)})",
+                x="False Positive Rate",
+                y="True Positive Rate",
+            ),  # type: ignore[operator]
+        )
 
 
 # Testing
 if __name__ == "__main__":
+    # Import libraries
+    import pathlib
+
+    import statsmodels.api as sm
+
     # Set path to sample data
     DATA_PATH = (
-        pathlib.Path(__file__).parent.parent
-        / "tests"
-        / "data"
-        / "hypoxia.csv"
+        pathlib.Path(__file__).parent.parent / "tests" / "data" / "hypoxia.csv"
     )
 
     # Read in the data
@@ -276,11 +329,10 @@ if __name__ == "__main__":
     )
 
     # Create a dfbetas plot
-    logistic_diag.dfbetas_plot().save(
-        "dfbetas_plot.png"
-    )
+    logistic_diag.dfbetas_plot().save("dfbetas_plot.png")
 
     # Create a VIF plot
-    logistic_diag.vif_plot().save(
-        "vif_plot.png"
-    )
+    logistic_diag.vif_plot().save("vif_plot.png")
+
+    # Create a ROC plot
+    logistic_diag.roc_curve_plot().save("roc_curve_plot.png")

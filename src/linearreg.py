@@ -46,15 +46,15 @@ class LinearMadeEasy:
         df = self.diagnostic_data
 
         return (
-            ggplot(df, aes(x="fitted", y="residuals"))
-            + geom_point(alpha=0.4)
+            ggplot(df, aes(x="fitted", y="residuals")) # type: ignore[no-untyped-call]
+            + geom_point(alpha=0.4, color = "skyblue")
             + geom_hline(yintercept=0, linetype="dashed", color="red")
             + labs(
                 title="Residuals vs Fitted Values",
                 x="Fitted Values",
                 y="Residuals"
             )
-            + theme_minimal()
+            + theme_minimal() # type: ignore[no-untyped-call]
         )
 
 
@@ -64,11 +64,11 @@ class LinearMadeEasy:
         df = self.diagnostic_data
 
         return (
-            ggplot(df, aes(sample="std_resid"))
+            ggplot(df, aes(sample="std_resid")) # type: ignore[no-untyped-call]
             + stat_qq()
             + stat_qq_line(color="red", linetype="dashed")
             + labs(title="Normal Q-Q Plot (Standardized Residuals)")
-            + theme_minimal()
+            + theme_minimal() # type: ignore[no-untyped-call]
         )
 
 
@@ -83,7 +83,7 @@ class LinearMadeEasy:
         })
 
         return (
-            ggplot(df_plot, aes(x="x", y="y"))
+            ggplot(df_plot, aes(x="x", y="y")) # type: ignore[no-untyped-call]
             + geom_point(alpha=0.3)
             + geom_smooth(method="lm")
             + labs(
@@ -91,7 +91,7 @@ class LinearMadeEasy:
                 x=self.predictor_names[1] if len(self.predictor_names) > 1 else self.predictor_names[0],
                 y=self.response_name
             )
-            + theme_minimal()
+            + theme_minimal() # type: ignore[no-untyped-call]
         )
         
 """

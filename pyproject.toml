@@ -1,3 +1,18 @@
+[project]
+name = "regressionmadeeasy"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "polars",
+    "statsmodels",
+    "numpy",
+    "matplotlib",
+]
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.backends.legacy:build"
+
 [tool.mypy]
 mypy_path = "src"
 explicit_package_bases = true
@@ -12,13 +27,13 @@ line-length = 79
 
 [tool.ruff.lint]
 select = [
-  "D",   # pydocstyle 
-  "E",   # pycodestyle
-  "F",   # pyflakes
-  "I",   # isort
-  "B",   # flake8-bugbear
-  "SIM", # flake8-simplify
-  "UP",  # pyupgrade
+  "D",
+  "E",
+  "F",
+  "I",
+  "B",
+  "SIM",
+  "UP",
 ]
 
 [tool.ruff.lint.pydocstyle]

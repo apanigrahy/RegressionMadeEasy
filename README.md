@@ -67,6 +67,8 @@ linear_diag.resid_vs_fitted.save("lin_model_residuals_plot.png")
 linear_diag.qq_plot.save("lin_model_qq_plot.png") 
 linear_diag.cooks_distance_plot.save("lin_model_cooks_distance_plot.png")
 
+```
+
 Example Regression Plot:
 
 ![Regression Plot](docs/images/lin_model_regression_plot.png)
@@ -74,8 +76,6 @@ Example Regression Plot:
 Example QQ Plot output:
 
 ![QQ Plot](docs/images/lin_model_qq_plot.png)
-
-```
 
 ## Logistic Regression
 
@@ -109,35 +109,3 @@ Example ROC curve output:
 ![ROC Curve](docs/images/log_model_roc_curve_plot.png)
 
 ```
-
-## Logistic Regression
-
-Fit a logistic regression model from the same sample data, and generate diagnostic plots.
-
-```python
-# Define outcome and predictor variables
-y = df["CAD"]
-X = sm.add_constant(df[["Age", "BMI", "Hyper", "Sleeptime"]])
-
-# Fit logistic regression model
-model = sm.Logit(y, X).fit()
-
-# Create LogisticMadeEasy object
-logistic_diag = LogisticMadeEasy(model)
-
-# Generate diagnostic plots
-logistic_diag.deviance_residual_vs_fitted_plot().save("log_model_deviance_residuals_plot.png")
-logistic_diag.cooks_distance_plot().save("log_model_cooks_distance_plot.png")
-logistic_diag.dfbetas_plot().save("log_model_dfbetas_plot.png")
-logistic_diag.vif_plot().save("log_model_vif_plot.png")
-logistic_diag.roc_curve_plot().save("log_model_roc_curve_plot.png")
-```
-
-Example DFBetas Plot:
-
-![ROC Curve](docs/images/log_model_dfbetas_plot.png)
-
-Example ROC curve output:
-
-![ROC Curve](docs/images/log_model_roc_curve_plot.png)
-

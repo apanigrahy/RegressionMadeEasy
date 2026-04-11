@@ -15,10 +15,12 @@ from plotnine import (
     geom_hline,
     geom_point,
     geom_segment,
+    geom_vline,
     ggplot,
     labs,
     theme_classic,
 )
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 
 # Create a custom class object for logistic regression models
@@ -180,8 +182,50 @@ class LogisticMadeEasy:
             ),  # type: ignore[operator]
         )
 
-
     # Define a property for VIF plot
+    def vif_plot(self) -> ggplot:
+        """Plot VIF for each predictor."""
+        # Calculate VIF for each predictor (skipping intercept at index 0)
+        vif_values = [
+            variance_inflation_factor(self.model.model.exog, i)
+            for i in range(1, self.model.model.exog.shape[1])
+        ]
+        # Build a dataframe for plotnine to use
+        plot_df = pd.DataFrame(
+            {
+                "predictor": self._formatted_predictor_names[1:],
+                "vif": vif_values,
+            }
+        )
+
+        # Return the plot
+        return (
+            ggplot(
+                plot_df,
+                aes(  # type: ignore[no-untyped-call]
+                    x="vif", y="predictor"
+                ),
+            )
+            + geom_point(alpha=0.8, color="skyblue", size=3)
+            + geom_vline(
+                xintercept=2,
+                linetype="dashed",
+                color="red",
+            )
+            + geom_vline(
+                xintercept=5,
+                linetype="dashed",
+                color="red",
+            )
+            + theme_classic()  # type: ignore[no-untyped-call]
+            + labs(
+                title="Variance Inflation Factor by Predictor",
+                x="VIF",
+                y="Predictor",
+            )
+        )
+
+    # Add an ROC curve plot
 
     # Define a method for displaying a coefficent summary table
 
@@ -195,15 +239,15 @@ if __name__ == "__main__":
         pathlib.Path(__file__).parent.parent
         / "tests"
         / "data"
-        / "diabetes_sample_data_BRFSS2015.csv"
+        / "hypoxia.csv"
     )
 
     # Read in the data
     df = pd.read_csv(DATA_PATH)
 
     # Define outcome and predictor variables
-    OUTCOME = "Diabetes_binary"
-    PREDICTORS = ["HighBP", "HighChol", "BMI", "Smoker"]
+    OUTCOME = "CAD"
+    PREDICTORS = ["Age", "BMI", "Hyper", "Sleeptime"]
 
     # Define outcome and predictor variables
     y = df[OUTCOME]
@@ -234,4 +278,9 @@ if __name__ == "__main__":
     # Create a dfbetas plot
     logistic_diag.dfbetas_plot().save(
         "dfbetas_plot.png"
+    )
+
+    # Create a VIF plot
+    logistic_diag.vif_plot().save(
+        "vif_plot.png"
     )

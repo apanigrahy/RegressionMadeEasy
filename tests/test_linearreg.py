@@ -18,8 +18,8 @@ DATA_PATH = (
 df = pl.read_csv(DATA_PATH)
 
 # Define outcome and predictor variables
-OUTCOME = "Income"
-PREDICTORS = ["Age"]
+OUTCOME = "TWA MAP"
+PREDICTORS = ["Sleeptime"]
 
 # Convert to numpy for statsmodels
 y = df[OUTCOME].to_numpy()
@@ -140,14 +140,14 @@ import matplotlib.pyplot as plt
 # 2. Test the Regression Plot
 print("Generating Regression Plot...")
 reg_plot = helper.regression_plot
-reg_plot.save("regression_analysis.png", width=8, height=6, dpi=300)
+reg_plot.save("reg_analysis1.png", width=8, height=6, dpi=300)
 
 #3 Test Resid 
 print("Generating Residual Plot...")
 res_plot = helper.resid_vs_fitted
-res_plot.save("resid_plot.png", width=8, height=6, dpi=300)
+res_plot.save("resid_plot1.png", width=8, height=6, dpi=300)
 
 # 4. Test the QQ Plot
 print("Generating QQ Plot...")
 qq_plot = helper.qq_plot
-qq_plot.save("qq_plot.png", width=8, height=6, dpi=300)
+qq_plot.save("qq_plot1.png", width=8, height=6, dpi=300)

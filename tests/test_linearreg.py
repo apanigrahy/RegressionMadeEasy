@@ -11,7 +11,7 @@ import statsmodels.api as sm
 DATA_PATH = (
     pathlib.Path(__file__).parent
     / "data"
-    / "diabetes_sample_data_BRFSS2015.csv"
+    / "hypoxia.csv"
 )
 
 # Read in the data
@@ -37,96 +37,101 @@ model = sm.OLS(y, X).fit()
 
 """Utilities for interpreting linear regression models."""
 
+"""Utilities for interpreting linear regression models."""
+
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-import scipy.stats as stats
-from typing import Any
+import statsmodels.api as sm
+from typing import cast
 from statsmodels.regression.linear_model import RegressionResultsWrapper
-from plotnine import ggplot, aes, geom_point, geom_smooth, labs, theme_minimal, geom_hline, stat_qq, stat_qq_line
+from plotnine import (
+    ggplot, aes, geom_point, geom_hline, geom_smooth,
+    labs, theme_minimal, stat_qq, stat_qq_line
+)
 
 
 class LinearMadeEasy:
-    """Helper class for plots, tables, & interpretations from a lin model."""
+    """Helper class for diagnostic plots for linear regression models."""
 
-    def __init__(
-        self,
-        model: RegressionResultsWrapper,
-    ) -> None:
-        """Initialize the LinearMadeEasy object.
-
-        This only requires the fitted model results object. 
-        Everything else cna be extracted since the X and Y data 
-        is tucked inside of the model object (exog and endog).
-        """
+    def __init__(self, model: RegressionResultsWrapper) -> None:
+        """Initialize with fitted OLS model."""
         self.model = model
-        self.x = model.model.exog
+
+        self.fitted_values = model.fittedvalues
+        self.residuals = model.resid
+        self.std_resid = model.get_influence().resid_studentized_internal
+
+        self.predictor_names = model.model.exog_names
+        self.response_name = model.model.endog_names
+
+        # safer design: store full design matrix
+        self.X = model.model.exog
         self.y = model.model.endog
-        self.predictor_x = model.model.exog_names
-        self.predictor_y = model.model.endog_names
 
 
     @property
     def diagnostic_data(self) -> pd.DataFrame:
-        """Internal helper to bundle residuals and fitted values into a DataFrame."""
+        """Bundle diagnostics into a DataFrame."""
         return pd.DataFrame({
-            "fitted": self.model.fittedvalues,
-            "residuals": self.model.resid,
-            "std_resid": self.model.get_influence().resid_studentized_internal
+            "fitted": self.fitted_values,
+            "residuals": self.residuals,
+            "std_resid": self.std_resid
         })
+
 
     @property
     def resid_vs_fitted(self) -> ggplot:
-        """Creates a residuals vs fitted scatter plot."""
+        """Residuals vs fitted values plot."""
         df = self.diagnostic_data
-        
+
         return (
-            ggplot(df, aes(x='fitted', y='residuals'))
-            + geom_point(alpha=0.3, color="skyblue")
-            + geom_hline(yintercept=0, color="red", linetype="dashed")
-            + labs(title="Residuals vs Fitted", x="Predicted", y="Error")
+            ggplot(df, aes(x="fitted", y="residuals"))
+            + geom_point(alpha=0.4)
+            + geom_hline(yintercept=0, linetype="dashed", color="red")
+            + labs(
+                title="Residuals vs Fitted Values",
+                x="Fitted Values",
+                y="Residuals"
+            )
             + theme_minimal()
         )
+
 
     @property
     def qq_plot(self) -> ggplot:
-        """Creates a Normal Q-Q plot to check if residuals are normally distributed."""
+        """QQ plot for normality of residuals."""
         df = self.diagnostic_data
+
         return (
-            ggplot(df, aes(sample='std_resid')) 
+            ggplot(df, aes(sample="std_resid"))
             + stat_qq()
             + stat_qq_line(color="red", linetype="dashed")
-            + labs(
-                title="Normal Q-Q Plot")
+            + labs(title="Normal Q-Q Plot (Standardized Residuals)")
             + theme_minimal()
         )
-        
+
 
     @property
-    def plot_regression(self) -> ggplot:
-        """Create a scatter plot with fitted regression line.
+    def regression_plot(self) -> ggplot:
+        """Observed data + fitted regression line."""
+        x_vals = self.X[:, 1] if self.X.shape[1] > 1 else self.X[:, 0]
 
-        Returns:
-            A Figure object showing observed data and fitted line.
-        """
         df_plot = pd.DataFrame({
-            'x_val': self.x[:, 1],
-            'y_val': self.y
+            "x": x_vals,
+            "y": self.y
         })
 
         return (
-        ggplot(df_plot, aes(x='x_val', y='y_val'))
-        + geom_point(alpha=0.1, color="skyblue")
-        + geom_smooth(method='lm', color='red', size=1.5) 
-        + labs(
-            title=f"Linear Regression: {self.predictor_x[1]} vs {self.predictor_y}",
-            x=self.predictor_x[1],
-            y=self.predictor_y,
-            caption="Line calculated via OLS"
+            ggplot(df_plot, aes(x="x", y="y"))
+            + geom_point(alpha=0.3)
+            + geom_smooth(method="lm")
+            + labs(
+                title=f"{self.response_name} vs Predictor",
+                x=self.predictor_names[1] if len(self.predictor_names) > 1 else self.predictor_names[0],
+                y=self.response_name
+            )
+            + theme_minimal()
         )
-        + theme_minimal()
-    )
 
 helper = LinearMadeEasy(model)
 
@@ -134,8 +139,8 @@ import matplotlib.pyplot as plt
 
 # 2. Test the Regression Plot
 print("Generating Regression Plot...")
-reg_plot = helper.plot_regression
-#reg_plot.save("regression_analysis.png", width=8, height=6, dpi=300)
+reg_plot = helper.regression_plot
+reg_plot.save("regression_analysis.png", width=8, height=6, dpi=300)
 
 #3 Test Resid 
 print("Generating Residual Plot...")

@@ -1,5 +1,9 @@
 """Utilities for interpreting linear regression models."""
 
+# Import pathlib for handling files
+import pathlib
+
+
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -7,7 +11,7 @@ from typing import cast
 from statsmodels.regression.linear_model import RegressionResultsWrapper
 from plotnine import (
     ggplot, aes, geom_point, geom_hline, geom_smooth,
-    labs, theme_minimal, stat_qq, stat_qq_line
+    labs, theme_classic, stat_qq, stat_qq_line
 )
 
 
@@ -25,7 +29,6 @@ class LinearMadeEasy:
         self.predictor_names = model.model.exog_names
         self.response_name = model.model.endog_names
 
-        # safer design: store full design matrix
         self.X = model.model.exog
         self.y = model.model.endog
 
@@ -54,7 +57,7 @@ class LinearMadeEasy:
                 x="Fitted Values",
                 y="Residuals"
             )
-            + theme_minimal() # type: ignore[no-untyped-call]
+            + theme_classic() # type: ignore[no-untyped-call]
         )
 
 
@@ -67,8 +70,11 @@ class LinearMadeEasy:
             ggplot(df, aes(sample="std_resid")) # type: ignore[no-untyped-call]
             + stat_qq()
             + stat_qq_line(color="red", linetype="dashed")
-            + labs(title="Normal Q-Q Plot (Standardized Residuals)")
-            + theme_minimal() # type: ignore[no-untyped-call]
+            + labs(title="Normal Q-Q Plot (Standardized Residuals)",
+                   x="Theoretical Quantiles",
+                   y="Sample Quantiles"
+            )
+            + theme_classic() # type: ignore[no-untyped-call]
         )
 
 
@@ -84,68 +90,58 @@ class LinearMadeEasy:
 
         return (
             ggplot(df_plot, aes(x="x", y="y")) # type: ignore[no-untyped-call]
-            + geom_point(alpha=0.3)
+            + geom_point(alpha=0.3, color = "skyblue")
             + geom_smooth(method="lm")
             + labs(
                 title=f"{self.response_name} vs Predictor",
                 x=self.predictor_names[1] if len(self.predictor_names) > 1 else self.predictor_names[0],
                 y=self.response_name
             )
-            + theme_minimal() # type: ignore[no-untyped-call]
+            + theme_classic() # type: ignore[no-untyped-call]
         )
         
-"""
-    @property
-    def table_one(self) -> pd.DataFrame:
-        Generate a summary table of regression coefficients.
 
-        Returns:
-            A pandas DataFrame containing coefficients, standard errors,
-            p-values, confidence intervals, and significance labels.
-        
-        conf_int = self.model.conf_int()
+# Testing
+if __name__ == "__main__":
+    # Set path to sample data
+    DATA_PATH = (
+        pathlib.Path(__file__).parent.parent
+        / "tests"
+        / "data"
+        / "hypoxia.csv"
+    )
 
-        df_results = pd.DataFrame({
-            "Variable": self.predictor_names,
-            "Coefficient": self.model.params,
-            "Std_Error": self.model.bse,
-            "P_Value": self.model.pvalues,
-            "Conf_Lower": conf_int[:, 0],
-            "Conf_Upper": conf_int[:, 1],
-        })
+    # Read in the data
+    df = pd.read_csv(DATA_PATH)
 
-        df_results["Significance"] = df_results["P_Value"].apply(
-            lambda p: "Significant" if p < 0.05 else "Not Significant"
-        )
+    # Define outcome and predictor variables
+    OUTCOME = "TWA MAP"
+    PREDICTORS = ["Sleeptime"]
 
-        return df_results
+    # Define outcome and predictor variables
+    y = df[OUTCOME]
+    X = sm.add_constant(df[PREDICTORS])
 
-    @property
-    def interpretation(self) -> str:
-        Generate a plain-English interpretation of the regression result.
+    # Fit a linear regression model
+    model = sm.OLS(y, X).fit()
 
-        Returns:
-            A string summarizing the direction, magnitude, and statistical
-            significance of the predictor.
+    # Print summary to check if model was fit
+    print(model.summary())
 
-        Notes:
-            - Assumes a single predictor model.
-            - Interprets the coefficient of the first non-intercept term.
-        
-        coef = float(self.model.params[1])
-        pval = float(self.model.pvalues[1])
+    # Print model type
+    print(type(model))
 
-        significance = (
-            "statistically significant" if pval < 0.05 else "not statistically significant"
-        )
+    # Create the made easy object
+    helper = LinearMadeEasy(model)
 
-        direction = "increase" if coef > 0 else "decrease"
+    reg_plot = helper.regression_plot
+    reg_plot.save("reg_analysis3.png", width=8, height=6, dpi=300)
 
-        return (
-            f"The model found a {significance} relationship between "
-            f"{self.predictor_names[1]} and the response. "
-            f"For every 1-unit increase in {self.predictor_names[1]}, "
-            f"the response is expected to {direction} by {abs(coef):.4f} units."
-        )
-    
-"""
+    #3 Test Resid 
+    res_plot = helper.resid_vs_fitted
+    res_plot.save("resid_plot3.png", width=8, height=6, dpi=300)
+
+    # 4. Test the QQ Plot
+    qq_plot = helper.qq_plot
+    qq_plot.save("qq_plot3.png", width=8, height=6, dpi=300)
+

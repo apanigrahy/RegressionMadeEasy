@@ -24,13 +24,21 @@ regression_plot - Visualizes observed data along with the fitted regression line
 
 cooks_distance_plot - Identifies influential observations using Cook’s Distance by checking the influence of each data point on the fitted model. Points above the threshhold may strongly influence the model and should be checked.
 
-For LogitMadeEasy there are :
+For LogitMadeEasy there are 6 properties:
 
+_formatted_predictor_names - 
 
+deviance_residual_vs_fitted_plot - 
 
+cooks_distance_plot - 
 
+dfbetas_plot - 
 
-Example Data Set:
-hypoxia.csv
+vif_plot - 
 
+roc_curve_plot - 
 
+Example Data and Testing:
+
+To demonstrate functionality, we include an example dataset (hypoxia.csv) and testing workflow within the project.
+For the linear model the outcome variable is 'TWA MAP' and the predictor variable is 'Sleeptime'. For the logistic model the outcome variable is 'CAD' and the predictors are 'Age', 'BMI', 'Hyper', 'Sleeptime'. 

@@ -1,3 +1,40 @@
+"""Tests for linearreg.py."""
+
+# Import pathlib for handling files
+import pathlib
+
+# Import packages for data manipulation and regression model fitting
+import polars as pl
+import statsmodels.api as sm
+
+# Set path to sample data
+DATA_PATH = (
+    pathlib.Path(__file__).parent
+    / "data"
+    / "diabetes_sample_data_BRFSS2015.csv"
+)
+
+# Read in the data
+df = pl.read_csv(DATA_PATH)
+
+# Define outcome and predictor variables
+OUTCOME = "Income"
+PREDICTORS = ["Age"]
+
+# Convert to numpy for statsmodels
+y = df[OUTCOME].to_numpy()
+X = df[PREDICTORS].to_numpy()
+
+# Add an intercepts column
+X = sm.add_constant(X)
+
+# Fit an Ordinary Least Squares (OLS) linear regression model
+model = sm.OLS(y, X).fit()
+
+# Print summary to check if model was fit
+#print(model.summary())
+
+
 """Utilities for interpreting linear regression models."""
 
 import numpy as np
@@ -27,7 +64,7 @@ class LinearMadeEasy:
         self.x = model.model.exog
         self.y = model.model.endog
         self.predictor_x = model.model.exog_names
-        self.predictor_y = model.model.endo_names
+        self.predictor_y = model.model.endog_names
 
 
     @property
@@ -91,106 +128,21 @@ class LinearMadeEasy:
         + theme_minimal()
     )
 
-        
-"""
-    @property
-    def table_one(self) -> pd.DataFrame:
-        Generate a summary table of regression coefficients.
-
-        Returns:
-            A pandas DataFrame containing coefficients, standard errors,
-            p-values, confidence intervals, and significance labels.
-        
-        conf_int = self.model.conf_int()
-
-        df_results = pd.DataFrame({
-            "Variable": self.predictor_names,
-            "Coefficient": self.model.params,
-            "Std_Error": self.model.bse,
-            "P_Value": self.model.pvalues,
-            "Conf_Lower": conf_int[:, 0],
-            "Conf_Upper": conf_int[:, 1],
-        })
-
-        df_results["Significance"] = df_results["P_Value"].apply(
-            lambda p: "Significant" if p < 0.05 else "Not Significant"
-        )
-
-        return df_results
-
-    @property
-    def interpretation(self) -> str:
-        Generate a plain-English interpretation of the regression result.
-
-        Returns:
-            A string summarizing the direction, magnitude, and statistical
-            significance of the predictor.
-
-        Notes:
-            - Assumes a single predictor model.
-            - Interprets the coefficient of the first non-intercept term.
-        
-        coef = float(self.model.params[1])
-        pval = float(self.model.pvalues[1])
-
-        significance = (
-            "statistically significant" if pval < 0.05 else "not statistically significant"
-        )
-
-        direction = "increase" if coef > 0 else "decrease"
-
-        return (
-            f"The model found a {significance} relationship between "
-            f"{self.predictor_names[1]} and the response. "
-            f"For every 1-unit increase in {self.predictor_names[1]}, "
-            f"the response is expected to {direction} by {abs(coef):.4f} units."
-        )
-    
-"""
-import pathlib
-
-# Import packages for data manipulation and regression model fitting
-import polars as pl
-import statsmodels.api as sm
-
-# Set path to sample data
-DATA_PATH = (
-    pathlib.Path(__file__).parent
-    / "data"
-    / "diabetes_sample_data_BRFSS2015.csv"
-)
-
-# Read in the data
-df = pl.read_csv(DATA_PATH)
-
-# Define outcome and predictor variables
-OUTCOME = "Income"
-PREDICTORS = ["Age"]
-
-# Convert to numpy for statsmodels
-y = df[OUTCOME].to_numpy()
-X = df[PREDICTORS].to_numpy()
-
-# Add an intercepts column
-X = sm.add_constant(X)
-
-# Fit an Ordinary Least Squares (OLS) linear regression model
-model = sm.OLS(y, X).fit()
-
-# Print summary to check if model was fit
 helper = LinearMadeEasy(model)
+
+import matplotlib.pyplot as plt
 
 # 2. Test the Regression Plot
 print("Generating Regression Plot...")
 reg_plot = helper.plot_regression
-print(reg_plot)
+#reg_plot.save("regression_analysis.png", width=8, height=6, dpi=300)
 
 #3 Test Resid 
 print("Generating Residual Plot...")
 res_plot = helper.resid_vs_fitted
-print(res_plot)
+res_plot.save("resid_plot.png", width=8, height=6, dpi=300)
 
 # 4. Test the QQ Plot
 print("Generating QQ Plot...")
 qq_plot = helper.qq_plot
-print(qq_plot)
+qq_plot.save("qq_plot.png", width=8, height=6, dpi=300)

@@ -7,7 +7,7 @@ import statsmodels.api as sm
 from plotnine import ggplot
 
 # Import LogisticMadeEasy class object
-from linearreg import LinearMadeEasy
+from regressionmadeeasy.linearreg import LinearMadeEasy
 
 
 # Simulate sample data, fit linear regression model, and return a

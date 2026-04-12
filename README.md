@@ -11,7 +11,7 @@ Elisabeth Bond: elisabeth.bond@duke.edu
 Clone the repository and install the package in editable mode:
 
 ```bash
-git clone https://github.com/your-username/RegressionMadeEasy.git
+git clone https://github.com/anandpanigrahy/RegressionMadeEasy.git
 cd RegressionMadeEasy
 pip install -e .
 ```
@@ -64,16 +64,16 @@ import statsmodels.api as sm
 from regressionmadeeasy.linearreg import LinearMadeEasy
 from regressionmadeeasy.logisticreg import LogisticMadeEasy
 
-# Load sample dataset
+# Load sample dataset (requires repo to be cloned, replace path with your own data if installed via pip)
 df = pd.read_csv("tests/data/hypoxia.csv")
 
 y = df["TWA MAP"]
 X = sm.add_constant(df[["Sleeptime"]])
 
-# Fit logistic regression model
+# Fit linear regression model
 model = sm.OLS(y, X).fit()
 
-# Create LogisticMadeEasy object
+# Create LinearMadeEasy object
 linear_diag = LinearMadeEasy(model)
 
 # Generate diagnostic plots
@@ -145,6 +145,7 @@ Examples of how we used AI assistance:
 - Calculations: asked for help with specific computations like predicted probability thresholds to calculate TPR and FPR for the ROC curve, and using `np.trapezoid` for AUC calculation.
 - Test structure: asked for guidance on setting up pytest fixtures, what to assert for methods that return plot objects, and how to simulate realistic data for testing
 - Git issues: asked for help resolving a merge conflict and recovering after a branch and specific files were accidentally deleted.
+- Project restructuring suggestions: asked how to re-structure the project files in order to run the and install the package properly
 
 ## What AI Produced
 AI produced targeted code suggestions, fixed specific lines, and answered questions. 

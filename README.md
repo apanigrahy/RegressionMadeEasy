@@ -3,8 +3,8 @@
 Linear & Logistic Regression Diagnostics Library
 
 ## Authors
-Anand Panigrahy: elisabeth.bond@duke.edu
-Elisabeth Bond: anand.panigrahy@duke.edu
+Anand Panigrahy: anand.panigrahy@duke.edu
+Elisabeth Bond: elisabeth.bond@duke.edu
 
 ## Installation:
 
@@ -50,7 +50,7 @@ The core idea is that each class will accept the fitted model object, extract re
 
 `roc_curve_plot` - Plots the ROC curve and reports the Area Under the Curve (AUC) in the title to evaluate model discrimination. A diagonal reference line represents a random classifier, and curves further above it indicate better model performance.
 
-# Example Data and Testing:
+# Example Data and Code
 
 To demonstrate functionality, we include an example dataset (hypoxia.csv) and testing workflow within the project.
 
@@ -61,7 +61,8 @@ For the linear model the outcome variable is 'TWA MAP' and the predictor variabl
 # Import required libraries
 import pandas as pd
 import statsmodels.api as sm
-from regressionmadeeasy.logisticreg import LinearMadeEasy, LogisticMadeEasy
+from regressionmadeeasy.linearreg import LinearMadeEasy
+from regressionmadeeasy.logisticreg import LogisticMadeEasy
 
 # Load sample dataset
 df = pd.read_csv("tests/data/hypoxia.csv")
@@ -122,6 +123,30 @@ logistic_diag.roc_curve_plot().save("log_model_roc_curve_plot.png")
 
 ![ROC Curve](docs/images/log_model_roc_curve_plot.png)
 
+# Running Tests
+Run tests for the package using any of the following options:
+   - Run all tests: `python -m pytest tests/`
+   - Run all tests with each individual tests output: `python -m pytest tests/ -v`
+   - Run a single test file: `python -m pytest tests/test_logisticreg.py`
 
 # AI Disclosure
-Claude (Anthropic) and ChatGPT (OpenAI) were used as coding assistants throughout this project. This included help with debugging, resolving mypy and ruff errors, structuring the class and test files, checking code logic, occasionally re-factoring code, and troubleshooting code and git errors. All code was written, reviewed, and understood by the authors. AI was used as a tool for assistance, not to generate the project independently.
+
+## Tools Used
+Claude (Anthropic) and ChatGPT (OpenAI) were used as coding assistants throughout this project.
+
+## How We Used Them
+Both tools were used to help with specific questions and problems as they came up. We wrote the code, made the design decisions, and directed the workflow. AI was not used to generate the project independently.
+
+Examples of how we used AI assistance:
+
+- Debugging and error resolution: when mypy or ruff raised errors we did not understand, we asked for explanations and fixes. For example resolving plotnine related mypy errors like `no-untyped-call` and `explicit-any`, and figuring out the right `pyproject.toml` configuration to handle third party libraries without type stubs.
+- Extracting the right attributes: when building plot methods we asked questions about what statsmodels attributes to use, for example which attribute stores Cook's distance, DFBetas, and residuals for both linear and logistic models.
+- Scaling existing code: once we had one plot methods working, we asked for help adapting the same structure to new plots, for example extending the Cook's distance pattern to DFBetas and VIF.
+- Calculations: asked for help with specific computations like predicted probability thresholds to calculate TPR and FPR for the ROC curve, and using `np.trapezoid` for AUC calculation.
+- Test structure: asked for guidance on setting up pytest fixtures, what to assert for methods that return plot objects, and how to simulate realistic data for testing
+- Git issues: asked for help resolving a merge conflict and recovering after a branch and specific files were accidentally deleted.
+
+## What AI Produced
+AI produced targeted code suggestions, fixed specific lines, and answered questions. 
+All suggestions were reviewed, tested, and integrated by us. Nothing was copied in 
+without being understood and verified.

@@ -11,7 +11,7 @@ Elisabeth Bond: elisabeth.bond@duke.edu
 Clone the repository and install the package in editable mode:
 
 ```bash
-git clone https://github.com/anandpanigrahy/RegressionMadeEasy.git
+git clone https://github.com/apanigrahy/RegressionMadeEasy.git
 cd RegressionMadeEasy
 pip install -e .
 ```

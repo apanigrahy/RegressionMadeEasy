@@ -148,6 +148,4 @@ Examples of how we used AI assistance:
 - Project restructuring suggestions: asked how to re-structure the project files in order to run the and install the package properly
 
 ## What AI Produced
-AI produced targeted code suggestions, fixed specific lines, and answered questions. 
-All suggestions were reviewed, tested, and integrated by us. Nothing was copied in 
-without being understood and verified.
+AI produced targeted code suggestions, fixed specific lines, and answered questions. All suggestions were reviewed, tested, and integrated by us. Nothing was copied in without being understood and verified.

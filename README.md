@@ -58,13 +58,22 @@ For the linear model the outcome variable is 'TWA MAP' and the predictor variabl
 
 ## Linear Regression
 ```python
+"""Linear regression example code workflow."""
+
 # Import required libraries
+import warnings
+
 import pandas as pd
 import statsmodels.api as sm
-from regressionmadeeasy.linearreg import LinearMadeEasy
-from regressionmadeeasy.logisticreg import LogisticMadeEasy
+from plotnine.exceptions import PlotnineWarning
 
-# Load sample dataset (requires repo to be cloned, replace path with your own data if installed via pip)
+from regressionmadeeasy.linearreg import LinearMadeEasy
+
+# Disabel save warnings from plotnine
+warnings.filterwarnings("ignore", category=PlotnineWarning)
+
+# Load sample dataset (requires repo to be cloned, replace path with your own 
+# data if installed via pip)
 df = pd.read_csv("tests/data/hypoxia.csv")
 
 y = df["TWA MAP"]
@@ -77,10 +86,18 @@ model = sm.OLS(y, X).fit()
 linear_diag = LinearMadeEasy(model)
 
 # Generate diagnostic plots
-linear_diag.regression_plot.save("lin_model_regression_plot.png") 
-linear_diag.resid_vs_fitted.save("lin_model_residuals_plot.png") 
-linear_diag.qq_plot.save("lin_model_qq_plot.png") 
-linear_diag.cooks_distance_plot.save("lin_model_cooks_distance_plot.png")
+linear_diag.regression_plot.save(
+   "lin_model_regression_plot.png", width=8, height=6, dpi=300
+   ) 
+linear_diag.resid_vs_fitted.save(
+   "lin_model_residuals_plot.png", width=8, height=6, dpi=300
+   ) 
+linear_diag.qq_plot.save(
+   "lin_model_qq_plot.png", width=8, height=6, dpi=300
+   ) 
+linear_diag.cooks_distance_plot.save(
+   "lin_model_cooks_distance_plot.png", width=8, height=6, dpi=300
+   )
 
 ```
 
@@ -97,6 +114,24 @@ linear_diag.cooks_distance_plot.save("lin_model_cooks_distance_plot.png")
 Fit a logistic regression model from the same sample data, and generate diagnostic plots.
 
 ```python
+"""Logistic regression example code workflow."""
+
+# Import required libraries
+import warnings
+
+import pandas as pd
+import statsmodels.api as sm
+from plotnine.exceptions import PlotnineWarning
+
+from regressionmadeeasy.logisticreg import LogisticMadeEasy
+
+# Disabel save warnings from plotnine
+warnings.filterwarnings("ignore", category=PlotnineWarning)
+
+# Load sample dataset (requires repo to be cloned, replace path with your own
+# data if installed via pip)
+df = pd.read_csv("tests/data/hypoxia.csv")
+
 # Define outcome and predictor variables
 y = df["CAD"]
 X = sm.add_constant(df[["Age", "BMI", "Hyper", "Sleeptime"]])
@@ -108,11 +143,20 @@ model = sm.Logit(y, X).fit()
 logistic_diag = LogisticMadeEasy(model)
 
 # Generate diagnostic plots
-logistic_diag.deviance_residual_vs_fitted_plot().save("log_model_deviance_residuals_plot.png")
-logistic_diag.cooks_distance_plot().save("log_model_cooks_distance_plot.png")
-logistic_diag.dfbetas_plot().save("log_model_dfbetas_plot.png")
-logistic_diag.vif_plot().save("log_model_vif_plot.png")
-logistic_diag.roc_curve_plot().save("log_model_roc_curve_plot.png")
+logistic_diag.deviance_residual_vs_fitted_plot().save(
+    "log_model_deviance_residuals_plot.png", width=8, height=6, dpi=300
+)
+logistic_diag.cooks_distance_plot().save(
+   "log_model_cooks_distance_plot.png", width=8, height=6, dpi=300
+   )
+logistic_diag.dfbetas_plot().save(
+   "log_model_dfbetas_plot.png", width=8, height=6, dpi=300)
+logistic_diag.vif_plot().save(
+   "log_model_vif_plot.png", width=8, height=6, dpi=300
+   )
+logistic_diag.roc_curve_plot().save(
+   "log_model_roc_curve_plot.png", width=8, height=6, dpi=300
+   )
 ```
 
 ### Example DFBetas Plot
